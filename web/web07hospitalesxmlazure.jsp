@@ -18,6 +18,13 @@
                         Buscar Hospital
                     </button>
                     <hr/>
+                    <div id="divbotones">
+                        
+                    </div>
+                    <button type="button" class="btn btn-outline-info"
+                            id="botondoctores" value="22">
+                        Doctores La Paz
+                    </button>
                     <table class="table table-info" id="tablahospitales">
                         <thead>
                             <tr>
@@ -25,11 +32,13 @@
                                 <th>Dirección</th>
                                 <th>Teléfono</th>
                                 <th>Camas</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody></tbody>
                     </table>
                     <div id="hospital"></div>
+                    <ul class="list-group" id="doctores"></ul>
                 </div>
             </main><!-- /.container -->            
         </section>
@@ -60,8 +69,42 @@
                             html += "<td>" + direccion + "</td>";
                             html += "<td>" + tlf + "</td>";
                             html += "<td>" + camas + "</td>";
+                            html += "<td>";
+                            //SI DESEAMOS QUE CONTROLES DIBUJADOS DINAMICAMENTE TENGAN
+                            //EVENTOS, DEBEMOS GENERAR CONTROLES CON JQUERY
+                            //NO HACIENDO UN STRING, QUE ES LO QUE HEMOS HECHO ANTES.
+                            //PARA CREAR CONTROLES, SE UTILIZA LA SIGUIENTE SINTAXIS:
+                            //var control = $("<TAG>")
+                            var boton = $("<button>");
+                            //AL CONTROL, PODEMOS AGREGAR TODO LO QUE DESEEMOS
+                            //UNA CLASE DE ESTILO
+                            boton.addClass("btn btn-success");
+                            //PODEMOS AGREGAR UN TEXTO
+                            boton.text("Doctores de " + nombre);
+                            //UN VALUE
+                            boton.val($(this).find("IdHospital").text());
+                            //PERO, LO QUE LE FALTA AL BOTON ES UNA ACCION (click)
+                            boton.click(function()  {
+                               //ACCIONES
+                               //QUE QUEREMOS HACER CUANDO PULSEMOS UN BOTON??
+                               //MOSTRAR LOS DOCTORES...DE UN HOSPITAL
+                               var idhospital = $(this).val();
+                               //PARA NO TENER TANTO CODIGO EN UN MISMO SITIO
+                               //PODEMOS CREAR UNA FUNCION QUE DIBUJARA LOS DOCTORES
+                               mostrarDoctoresHospital(idhospital);
+                            });
+                            //DIBUJAR EL BOTON EN ALGUN LUGAR, SE REALIZA MEDIANTE
+                            // Parent.append(control);
+                            $("#divbotones").append(boton);
+                            //LA RAZON PORQUE NO DIBUJA EL BOTON EN LA TABLA
+                            //1) AÑADE EL BOTON A LA TABLA
+                            //$("#tablahospitales tbody").append(boton);
+                            html += "</td>";
                             html += "</tr>";
                         });
+                        //2) QUE HACEMOS EN LA SIGUIENTE LINEA????
+                        //ESTA LINEA PONE EL CONTENIDO HTML DENTRO DE LA TABLA
+                        //CON LO CUAL, QUITA LOS BOTONES...
                         $("#tablahospitales tbody").html(html);
                     }
                 });
@@ -90,7 +133,48 @@
                        }
                     });
                 });
+                
+                $("#botondoctores").click(function() {
+                   //NECESITAMOS EL CODIGO DE HOSPITAL
+                   //RECUPERAMOS EL CODIGO DEL BOTON PULSADO
+                   var idhospital = $(this).val();
+                   //NECESITAMOS SABER LA PETICION DONDE ESTARAN LOS DOCTORES
+                   var request = "api/doctoreshospital/" + idhospital;
+                   $.ajax({
+                      url: url + request,
+                      type: "GET",
+                      dataType: "xml",
+                      success: function(data){
+                          var doctores = $(data).find("Doctor");
+                          var html = "";
+                          doctores.each(function() {
+                             html += "<li class='list-group-item'>" 
+                             + $(this).find("Apellido").text() + "</li>";
+                          });
+                          $("#doctores").html(html);
+                      }
+                   });
+                });
             });
+            
+            function mostrarDoctoresHospital(idhospital){
+                //NECESITAMOS SABER LA PETICION DONDE ESTARAN LOS DOCTORES
+                   var request = "api/doctoreshospital/" + idhospital;
+                   $.ajax({
+                      url: url + request,
+                      type: "GET",
+                      dataType: "xml",
+                      success: function(data){
+                          var doctores = $(data).find("Doctor");
+                          var html = "";
+                          doctores.each(function() {
+                             html += "<li class='list-group-item'>" 
+                             + $(this).find("Apellido").text() + "</li>";
+                          });
+                          $("#doctores").html(html);
+                      }
+                   });
+            }
         </script>
     </body>
 </html>
